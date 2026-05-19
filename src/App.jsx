@@ -8,18 +8,18 @@ function SimCard(props) {
 }
 
 const products = [
-  { title: "Samsung Galaxy A56 5G", category: "Neue Smartphones", price: "349 \u20ac", image: "/showcase/samsung-a56.svg", info: "128 GB \u00b7 5G \u00b7 Beratung vor Ort" },
-  { title: "Samsung Galaxy A17 5G", category: "Neue Smartphones", price: "239 \u20ac", image: "/showcase/samsung-a17.svg", info: "128 GB \u00b7 Dual SIM \u00b7 sofort verf\u00fcgbar" },
-  { title: "iPhone 15", category: "Neue Smartphones", price: "699 \u20ac", image: "/showcase/iphone15.svg", info: "128 GB \u00b7 5G \u00b7 Super Retina" },
-  { title: "iPhone 13 gepr\u00fcft", category: "Gebrauchte Ger\u00e4te", price: "449 \u20ac", image: "/showcase/used-phone.svg", info: "Sehr guter Zustand \u00b7 getestet" },
-  { title: "20W Schnelllade-Set", category: "Zubeh\u00f6r", price: "19,90 \u20ac", image: "/showcase/accessories.svg", info: "Adapter + USB-C Kabel" },
-  { title: "SIM-Karten Beratung", category: "SIM-Karten & Tarife", price: "ab 9,99 \u20ac", image: "/showcase/simcards.svg", info: "Ayyildiz \u00b7 Lyca \u00b7 Ortel" }
+  { title: "Samsung Galaxy A56 5G", category: "Neue Smartphones", price: "349 €", image: "/showcase/samsung-a56.svg", info: "128 GB · 5G · Beratung vor Ort" },
+  { title: "Samsung Galaxy A17 5G", category: "Neue Smartphones", price: "239 €", image: "/showcase/samsung-a17.svg", info: "128 GB · Dual SIM · sofort verfügbar" },
+  { title: "iPhone 15", category: "Neue Smartphones", price: "699 €", image: "/showcase/iphone15.svg", info: "128 GB · 5G · Super Retina" },
+  { title: "iPhone 13 geprüft", category: "Gebrauchte Geräte", price: "449 €", image: "/showcase/used-phone.svg", info: "Sehr guter Zustand · getestet" },
+  { title: "20W Schnelllade-Set", category: "Zubehör", price: "19,90 €", image: "/showcase/accessories.svg", info: "Adapter + USB-C Kabel" },
+  { title: "SIM-Karten Beratung", category: "SIM-Karten & Tarife", price: "ab 9,99 €", image: "/showcase/simcards.svg", info: "Ayyildiz · Lyca · Ortel" }
 ];
 
 function App() {
   return <main className="site">
     <header className="topbar">
-      <span><MapPin size={16} /> Badstra\u00dfe 6, 58095 Hagen</span>
+      <span><MapPin size={16} /> Badstraße 6, 58095 Hagen</span>
       <a href="tel:023313484182">02331 3484182</a>
       <a href="https://wa.me/4915739684985">WhatsApp</a>
     </header>
@@ -31,37 +31,38 @@ function App() {
         <a href="#shop">Shop</a>
         <a href="#sim">SIM-Karten</a>
         <a href="#passfoto">Passfotos</a>
+        <a href="#cidenbridge">CidenBridge</a>
         <a className="cart" href="#checkout">Warenkorb <b>0</b></a>
       </div>
     </nav>
 
     <section className="hero">
       <div className="heroText">
-        <div className="pill">Handyreparatur \u00b7 Smartphone Shop \u00b7 SIM \u00b7 Passfotos</div>
+        <div className="pill">Handyreparatur · Smartphone Shop · SIM · Passfotos</div>
         <h1>Ihr moderner Technik-Shop in Hagen</h1>
-        <p>Sun-TEL verbindet schnelle Handyreparatur, neue und gebrauchte Smartphones, Zubeh\u00f6r, SIM-Karten, biometrische Passbilder und Kopierservice in einem starken lokalen Shop-Erlebnis.</p>
+        <p>Sun-TEL verbindet schnelle Handyreparatur, neue und gebrauchte Smartphones, Zubehör, SIM-Karten, biometrische Passbilder und Kopierservice in einem starken lokalen Shop-Erlebnis.</p>
         <div className="heroActions">
           <a href="#shop" className="btn primary">Jetzt shoppen</a>
           <a href="#reparatur" className="btn secondary">Reparatur anfragen</a>
         </div>
         <div className="trustRow">
-          <span><ShieldCheck size={18}/> Pers\u00f6nlicher Service</span>
+          <span><ShieldCheck size={18}/> Persönlicher Service</span>
           <span><PackageCheck size={18}/> Abholung im Shop</span>
-          <span><CreditCard size={18}/> PayPal \u00b7 Karte \u00b7 Bar</span>
+          <span><CreditCard size={18}/> PayPal · Karte · Bar</span>
         </div>
       </div>
       <div className="heroGallery">
         <img src="/showcase/iphone15.svg" alt="iPhone 15"/>
         <img src="/showcase/samsung-a56.svg" alt="Samsung Galaxy"/>
         <img src="/showcase/repair.svg" alt="Reparatur"/>
-        <img src="/showcase/accessories.svg" alt="Zubeh\u00f6r"/>
+        <img src="/showcase/accessories.svg" alt="Zubehör"/>
       </div>
     </section>
 
     <section className="categories">
       <Category icon={<Smartphone/>} title="Neue Smartphones"/>
-      <Category icon={<ShoppingBag/>} title="Gebrauchte Ger\u00e4te"/>
-      <Category icon={<Cable/>} title="Zubeh\u00f6r & H\u00fcllen"/>
+      <Category icon={<ShoppingBag/>} title="Gebrauchte Geräte"/>
+      <Category icon={<Cable/>} title="Zubehör & Hüllen"/>
       <Category icon={<SimCard/>} title="SIM-Karten & Tarife"/>
       <Category icon={<Wrench/>} title="Handyreparatur"/>
       <Category icon={<Camera/>} title="Passfotos & Kopie"/>
@@ -71,7 +72,7 @@ function App() {
       <div className="sectionHead">
         <div>
           <h2>Beliebte Produkte</h2>
-          <p>Neue Modelle, gepr\u00fcfte gebrauchte Ger\u00e4te und Zubeh\u00f6r direkt vor Ort.</p>
+          <p>Neue Modelle, geprüfte gebrauchte Geräte und Zubehör direkt vor Ort.</p>
         </div>
         <a href="#checkout">Zum Warenkorb</a>
       </div>
@@ -93,8 +94,8 @@ function App() {
         <h3>Reparatur anfragen</h3>
         <input placeholder="Name"/>
         <input placeholder="Telefon"/>
-        <select><option>Marke w\u00e4hlen</option><option>Apple iPhone</option><option>Samsung Galaxy</option><option>Xiaomi / Redmi</option></select>
-        <select><option>Reparaturart w\u00e4hlen</option><option>Display Reparatur</option><option>Akkuwechsel</option><option>Ladebuchse</option></select>
+        <select><option>Marke wählen</option><option>Apple iPhone</option><option>Samsung Galaxy</option><option>Xiaomi / Redmi</option></select>
+        <select><option>Reparaturart wählen</option><option>Display Reparatur</option><option>Akkuwechsel</option><option>Ladebuchse</option></select>
         <button>Reparaturanfrage senden</button>
       </div>
     </section>
@@ -102,7 +103,7 @@ function App() {
     <section id="sim" className="section simSection">
       <div>
         <h2>SIM-Karten & Tarife</h2>
-        <p>Ayyildiz, Lyca und Ortel inklusive Aktivierung, Aufladung und pers\u00f6nlicher Tarifberatung.</p>
+        <p>Ayyildiz, Lyca und Ortel inklusive Aktivierung, Aufladung und persönlicher Tarifberatung.</p>
         <div className="heroActions"><a className="btn primary" href="https://wa.me/4915739684985">Tarifberatung per WhatsApp</a></div>
       </div>
       <img src="/showcase/simcards.svg" alt="SIM-Karten"/>
@@ -130,16 +131,59 @@ function App() {
       </div>
     </section>
 
+    <section className="section cidenbridgePilot" id="cidenbridge">
+      <div className="bridgeIntro">
+        <span className="bridgeKicker">Web2 to Secure Web3 Bridge</span>
+        <h2>Sun-TEL wird der erste lokale CidenBridgeDB Pilot-Shop.</h2>
+        <p>Diese Verbindung zeigt, wie ein bestehender Web2-Shop mit Cidentia Login, CidenCard, Reparatur-Proof und Garantie-Proof in eine sichere Web3-ready Vertrauensschicht wechseln kann.</p>
+        <div className="bridgeActions">
+          <a className="btn primary" href="https://cidentiaapp.vercel.app/login">Login with Cidentia</a>
+          <a className="btn secondary" href="https://bridge-db.cidenbridge.com/verify/preview">CidenBridgeDB Verify</a>
+        </div>
+      </div>
+
+      <div className="bridgeCards">
+        <article>
+          <ShieldCheck size={24}/>
+          <strong>Verified by CidenBridgeDB</strong>
+          <p>Shop, Kunde und Servicefall werden später über eine kontrollierte Trust-Verbindung verknüpft.</p>
+          <small>Trust layer ready</small>
+        </article>
+        <article>
+          <CreditCard size={24}/>
+          <strong>CidenCard Customer</strong>
+          <p>Kunden können sich mit Cidentia anmelden und eine shopbezogene Kundenkarte erhalten.</p>
+          <small>Identity ready</small>
+        </article>
+        <article>
+          <PackageCheck size={24}/>
+          <strong>Repair Proof</strong>
+          <p>Reparaturannahme, Diagnose, Abschluss und Garantie können als Proof-Kette sichtbar werden.</p>
+          <small>Proof ready</small>
+        </article>
+      </div>
+
+      <div className="bridgeFlow">
+        <span>Web2 Shop</span>
+        <b>{'->'}</b>
+        <span>Cidentia Login</span>
+        <b>{'->'}</b>
+        <span>CidenBridgeDB</span>
+        <b>{'->'}</b>
+        <span>Proof / Warranty</span>
+      </div>
+    </section>
+
     <section id="checkout" className="section checkoutPreview">
       <h2>Warenkorb & Checkout</h2>
-      <p>Der neue Shop wird Warenkorb, Abholung, Versand, PayPal, Stripe, \u00dcberweisung und Barzahlung unterst\u00fctzen.</p>
-      <div className="paymentRow"><span>PayPal</span><span>VISA</span><span>Mastercard</span><span>Stripe</span><span>\u00dcberweisung</span><span>Bar</span></div>
+      <p>Der neue Shop wird Warenkorb, Abholung, Versand, PayPal, Stripe, Überweisung und Barzahlung unterstützen.</p>
+      <div className="paymentRow"><span>PayPal</span><span>VISA</span><span>Mastercard</span><span>Stripe</span><span>Überweisung</span><span>Bar</span></div>
     </section>
 
     <footer className="footer">
       <div>
         <h3>Sun-TEL</h3>
-        <p>Badstra\u00dfe 6 \u00b7 58095 Hagen \u00b7 Seit 24 Jahren in Hagen</p>
+        <p>Badstraße 6 · 58095 Hagen · Seit 24 Jahren in Hagen</p>
       </div>
       <div>
         <a href="tel:023313484182">02331 3484182</a>
