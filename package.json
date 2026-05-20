@@ -1,5 +1,5 @@
 {
-  "name": "suntelshop",
+  "name": "suntelshop-full-v1",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -7,14 +7,15 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "start": "node server/index.mjs",
+    "seed": "node scripts/seed.mjs --force",
     "check": "npm run build && node --check server/index.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "express": "latest",
+    "nodemailer": "^8.0.7",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "express": "latest"
+    "vite": "latest"
   }
 }

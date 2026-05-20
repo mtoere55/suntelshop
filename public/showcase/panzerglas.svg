@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="300" viewBox="0 0 360 300">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop stop-color="#101d32"/>
+      <stop offset="1" stop-color="#183d60"/>
+    </linearGradient>
+    <filter id="s"><feDropShadow dx="0" dy="15" stdDeviation="12" flood-color="#000" flood-opacity=".45"/></filter>
+  </defs>
+  <rect x="25" y="25" width="310" height="250" rx="28" fill="url(#g)" filter="url(#s)"/>
+  <circle cx="180" cy="118" r="58" fill="#ff7a00" opacity=".18"/>
+  <text x="180" y="137" text-anchor="middle" font-family="Arial" font-size="70">🛡️</text>
+  <text x="180" y="222" text-anchor="middle" font-family="Arial" font-size="28" font-weight="800" fill="#ffffff">Panzerglas</text>
+</svg>

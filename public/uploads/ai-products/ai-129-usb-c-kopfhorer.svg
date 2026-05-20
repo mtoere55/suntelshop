@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700">
+<defs>
+<linearGradient id="bgGrad" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#06101d"/><stop offset=".55" stop-color="#0b1b2c"/><stop offset="1" stop-color="#020811"/></linearGradient>
+<linearGradient id="deviceGrad" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f1f5f9"/><stop offset="1" stop-color="#64748b"/></linearGradient>
+<filter id="shadow"><feDropShadow dx="0" dy="24" stdDeviation="18" flood-color="#000" flood-opacity=".55"/></filter>
+</defs>
+<rect width="900" height="700" fill="url(#bgGrad)"/>
+<circle cx="735" cy="95" r="190" fill="#ff7600" opacity=".14"/>
+<circle cx="155" cy="120" r="160" fill="#43a6ff" opacity=".12"/>
+<rect x="42" y="42" width="816" height="616" rx="38" fill="rgba(255,255,255,.045)" stroke="rgba(145,201,255,.18)"/>
+<g filter="url(#shadow)"><path d="M195 185 C195 95, 405 95, 405 185 C405 275, 195 275, 195 190" fill="none" stroke="url(#deviceGrad)" stroke-width="28" stroke-linecap="round"/><rect x="165" y="165" width="70" height="48" rx="14" fill="#e2e8f0"/><rect x="365" y="165" width="70" height="48" rx="14" fill="#e2e8f0"/><text x="310" y="325" text-anchor="middle" font-size="30" font-weight="900" fill="white">USB</text></g>
+<text x="76" y="98" font-family="Arial" font-size="30" font-weight="900" fill="#fff">Sun-TEL</text>
+<text x="76" y="130" font-family="Arial" font-size="18" font-weight="700" fill="#ff9d2e">KI-Symbolbild · Hagen</text>
+<rect x="75" y="475" width="750" height="125" rx="24" fill="rgba(2,8,17,.58)" stroke="rgba(145,201,255,.20)"/>
+<text x="105" y="525" font-family="Arial" font-size="34" font-weight="900" fill="#fff">USB-C Kopfhörer</text>
+<text x="105" y="562" font-family="Arial" font-size="22" font-weight="700" fill="#a6b8c9">Suntel Zubehör · Zubehör</text>
+<text x="105" y="604" font-family="Arial" font-size="30" font-weight="900" fill="#ff9d2e">12,90 €</text>
+<text x="825" y="632" text-anchor="end" font-family="Arial" font-size="15" font-weight="700" fill="#8bffd4">Symbolbild</text>
+</svg>
