@@ -1880,3 +1880,31 @@ button{cursor:pointer}
   }
 }
 
+/* Step 74F-B - Cidentia return success state */
+.bridgeReturnSuccess{
+  margin-top:18px;
+  border:1px solid rgba(114,255,188,.28);
+  background:linear-gradient(135deg, rgba(22,163,74,.18), rgba(34,211,238,.10));
+  border-radius:18px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-width:680px;
+  box-shadow:0 18px 55px rgba(0,0,0,.22);
+}
+
+.bridgeReturnSuccess b{
+  color:#72ffbc;
+  font-size:1rem;
+}
+
+.bridgeReturnSuccess span{
+  color:#e8fbff;
+  font-weight:850;
+}
+
+.bridgeReturnSuccess small{
+  color:#b7c9db;
+}
+

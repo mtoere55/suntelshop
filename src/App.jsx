@@ -53,6 +53,13 @@ function useRoute() {
 
 
 function CidenBridgePilot() {
+  const returnTo = "https://handyreparatur.shop/?source=suntelshop&intent=repair_customer_card#cidenbridge";
+  const loginUrl = `https://cidentiaapp.vercel.app/login?return_to=${encodeURIComponent(returnTo)}&source=suntelshop&intent=repair_customer_card`;
+  const params = new URLSearchParams(window.location.search);
+  const connected = params.get("cidentia") === "connected";
+  const returnedCid = params.get("cid") || "";
+  const returnedTwin = params.get("twin") || "";
+
   return (
     <section className="section cidenbridgePilot" id="cidenbridge">
       <div className="bridgeIntro">
@@ -60,9 +67,17 @@ function CidenBridgePilot() {
         <h2>Sun-TEL wird der erste lokale CidenBridgeDB Pilot-Shop.</h2>
         <p>Diese Verbindung zeigt, wie ein bestehender Web2-Shop mit Cidentia Login, CidenCard, Reparatur-Proof und Garantie-Proof in eine sichere Web3-ready Vertrauensschicht wechseln kann.</p>
         <div className="bridgeActions">
-          <a className="btn primary" href="https://cidentiaapp.vercel.app/login">Login with Cidentia</a>
+          <a className="btn primary" href={loginUrl}>Login with Cidentia</a>
           <a className="btn ghost" href="https://bridge-db.cidenbridge.com/">CidenBridgeDB Verify</a>
         </div>
+
+        {connected && (
+          <div className="bridgeReturnSuccess">
+            <b>Cidentia connection active</b>
+            <span>{returnedCid || "CidenBridgeDB native identity"} · {returnedTwin || "confirmed_match"}</span>
+            <small>Customer card and repair proof preview can be prepared for Sun-TEL.</small>
+          </div>
+        )}
       </div>
 
       <div className="bridgeCards">

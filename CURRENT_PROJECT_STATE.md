@@ -34,3 +34,23 @@ Next:
 - Import this clean package into C:\suntelshop-git.
 - Commit as full-v1 source alignment.
 - Then continue Step 74F: Cidentia return/session link.
+
+
+## Step 74F-B - Cidentia Return Flow Patch
+
+Date: 2026-05-20
+Repo: C:\suntelshop-git
+Status: PATCHED / BUILD PENDING
+
+Scope:
+- Login with Cidentia now sends return_to, source and intent parameters.
+- Return target is handyreparatur.shop with #cidenbridge anchor.
+- SuntelShop shows a connection success state when cidentia=connected returns.
+- No CidenBridgeDB write.
+- No CidenDB touch.
+- No wallet, proof or blockchain write.
+
+Next:
+- Build and smoke.
+- Patch CidentiaApp LoginBridge to honor return_to after successful login.
+- Commit/tag after both repos pass.
