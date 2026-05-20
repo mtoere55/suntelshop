@@ -54,3 +54,30 @@ Next:
 - Build and smoke.
 - Patch CidentiaApp LoginBridge to honor return_to after successful login.
 - Commit/tag after both repos pass.
+
+
+## Step 74G-B - Customer Card and Proof Preview
+
+Date: 2026-05-20
+Repo: C:\suntelshop-git
+Status: PATCHED / BUILD PENDING
+
+Scope:
+- Adds Sun-TEL Customer Card Preview after Cidentia return.
+- Adds Repair Proof Preview.
+- Adds Warranty Proof Preview.
+- Adds CidenBridgeDB-ready payload preview JSON.
+- Preview appears only when cidentia=connected is present.
+
+Safety:
+- Frontend preview only.
+- No CidenBridgeDB write.
+- No CidenDB touch.
+- No wallet write.
+- No blockchain write.
+- No real proof write.
+
+Next:
+- Build and smoke.
+- Commit/tag if clean.
+- Deploy to Hetzner after approval.

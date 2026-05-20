@@ -59,6 +59,40 @@ function CidenBridgePilot() {
   const connected = params.get("cidentia") === "connected";
   const returnedCid = params.get("cid") || "";
   const returnedTwin = params.get("twin") || "";
+  const previewPayload = {
+    mode: "suntel_customer_repair_warranty_preview",
+    write_mode: "preview_only",
+    source: "suntelshop",
+    intent: params.get("intent") || "repair_customer_card",
+    identity: {
+      cid: returnedCid || "CidenBridgeDB native identity",
+      twin_status: returnedTwin || "confirmed_match",
+      cidentia_connected: connected
+    },
+    shop: {
+      name: "Sun-TEL Hagen",
+      domain: "handyreparatur.shop",
+      workspace_slug: "suntelshop-hagen",
+      address: "Badstrasse 6, 58095 Hagen"
+    },
+    customer_card_preview: {
+      card_type: "suntel_customer_card",
+      status: "preview_ready",
+      permissions: ["repair_status_read", "warranty_status_read", "customer_contact_limited"]
+    },
+    proof_previews: [
+      { type: "repair_received", status: "ready_for_future_write" },
+      { type: "diagnosis_started", status: "ready_for_future_write" },
+      { type: "repair_completed", status: "ready_for_future_write" },
+      { type: "warranty_issued", status: "ready_for_future_write" }
+    ],
+    safety: {
+      cidenbridge_write: false,
+      cidendb_touch: false,
+      wallet_write: false,
+      blockchain_write: false
+    }
+  };
 
   return (
     <section className="section cidenbridgePilot" id="cidenbridge">
@@ -72,10 +106,38 @@ function CidenBridgePilot() {
         </div>
 
         {connected && (
-          <div className="bridgeReturnSuccess">
-            <b>Cidentia connection active</b>
-            <span>{returnedCid || "CidenBridgeDB native identity"} · {returnedTwin || "confirmed_match"}</span>
-            <small>Customer card and repair proof preview can be prepared for Sun-TEL.</small>
+          <div className="bridgeReturnStack">
+            <div className="bridgeReturnSuccess">
+              <b>Cidentia connection active</b>
+              <span>{returnedCid || "CidenBridgeDB native identity"} · {returnedTwin || "confirmed_match"}</span>
+              <small>Customer card and repair proof preview can be prepared for Sun-TEL.</small>
+            </div>
+
+            <div className="bridgePreviewGrid">
+              <article>
+                <small>Customer Card Preview</small>
+                <b>Sun-TEL Customer Card</b>
+                <p>Shopbezogene Kundenkarte für Reparaturstatus, Garantiehinweis und kontrollierte Service-Kommunikation.</p>
+                <span>Preview only</span>
+              </article>
+              <article>
+                <small>Repair Proof Preview</small>
+                <b>Repair Received / Diagnosis</b>
+                <p>Reparaturannahme und Diagnose können später als CidenBridgeDB Proof-Kette vorbereitet werden.</p>
+                <span>No write yet</span>
+              </article>
+              <article>
+                <small>Warranty Proof Preview</small>
+                <b>Warranty Issued</b>
+                <p>Nach Abschluss kann ein Garantie-Proof vorbereitet werden, ohne private Rohdaten offenzulegen.</p>
+                <span>Proof-ready</span>
+              </article>
+            </div>
+
+            <details className="bridgePayloadPreview">
+              <summary>CidenBridgeDB-ready payload preview</summary>
+              <pre>{JSON.stringify(previewPayload, null, 2)}</pre>
+            </details>
           </div>
         )}
       </div>
