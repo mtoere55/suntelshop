@@ -102,7 +102,7 @@ function CidenBridgePilot() {
         <p>Diese Verbindung zeigt, wie ein bestehender Web2-Shop mit Cidentia Login, CidenCard, Reparatur-Proof und Garantie-Proof in eine sichere Web3-ready Vertrauensschicht wechseln kann.</p>
         <div className="bridgeActions">
           <a className="btn primary" href={loginUrl}>Login with Cidentia</a>
-          <a className="btn ghost" href="https://cidenbridgedb-control-ui.vercel.app/">CidenBridgeDB Verify</a>
+          <a className="btn ghost" href="https://cidenbridge.com/">CidenBridgeDB Verify</a>
         </div>
 
         {connected && (
