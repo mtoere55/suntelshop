@@ -65,7 +65,7 @@ function CidenBridgePilot() {
     source: "suntelshop",
     intent: params.get("intent") || "repair_customer_card",
     identity: {
-      cid: returnedCid || "CidenBridgeDB native identity",
+      cid: returnedCid || "CidenBridge native identity",
       twin_status: returnedTwin || "confirmed_match",
       cidentia_connected: connected
     },
@@ -98,18 +98,18 @@ function CidenBridgePilot() {
     <section className="section cidenbridgePilot" id="cidenbridge">
       <div className="bridgeIntro">
         <span className="bridgeKicker">Web2 to Secure Web3 Bridge</span>
-        <h2>Sun-TEL wird der erste lokale CidenBridgeDB Pilot-Shop.</h2>
+        <h2>Sun-TEL wird der erste lokale CidenBridge Pilot-Shop.</h2>
         <p>Diese Verbindung zeigt, wie ein bestehender Web2-Shop mit Cidentia Login, CidenCard, Reparatur-Proof und Garantie-Proof in eine sichere Web3-ready Vertrauensschicht wechseln kann.</p>
         <div className="bridgeActions">
           <a className="btn primary" href={loginUrl}>Login with Cidentia</a>
-          <a className="btn ghost" href="https://cidenbridge.com/">CidenBridgeDB Verify</a>
+          <a className="btn ghost" href="https://cidenbridge.com/">CidenBridge Verify</a>
         </div>
 
         {connected && (
           <div className="bridgeReturnStack">
             <div className="bridgeReturnSuccess">
               <b>Cidentia connection active</b>
-              <span>{returnedCid || "CidenBridgeDB native identity"} · {returnedTwin || "confirmed_match"}</span>
+              <span>{returnedCid || "CidenBridge native identity"} · {returnedTwin || "confirmed_match"}</span>
               <small>Customer card and repair proof preview can be prepared for Sun-TEL.</small>
             </div>
 
@@ -123,7 +123,7 @@ function CidenBridgePilot() {
               <article>
                 <small>Repair Proof Preview</small>
                 <b>Repair Received / Diagnosis</b>
-                <p>Reparaturannahme und Diagnose können später als CidenBridgeDB Proof-Kette vorbereitet werden.</p>
+                <p>Reparaturannahme und Diagnose können später als CidenBridge Proof-Kette vorbereitet werden.</p>
                 <span>No write yet</span>
               </article>
               <article>
@@ -135,7 +135,7 @@ function CidenBridgePilot() {
             </div>
 
             <details className="bridgePayloadPreview">
-              <summary>CidenBridgeDB-ready payload preview</summary>
+              <summary>CidenBridge-ready payload preview</summary>
               <pre>{JSON.stringify(previewPayload, null, 2)}</pre>
             </details>
           </div>
@@ -144,7 +144,7 @@ function CidenBridgePilot() {
 
       <div className="bridgeCards">
         <article>
-          <b>Verified by CidenBridgeDB</b>
+          <b>Verified by CidenBridge</b>
           <p>Shop, Kunde und Servicefall werden später über eine kontrollierte Trust-Verbindung verknüpft.</p>
           <small>Trust layer ready</small>
         </article>
@@ -165,7 +165,7 @@ function CidenBridgePilot() {
         <strong>{'->'}</strong>
         <span>Cidentia Login</span>
         <strong>{'->'}</strong>
-        <span>CidenBridgeDB</span>
+        <span>CidenBridge</span>
         <strong>{'->'}</strong>
         <span>Proof / Warranty</span>
       </div>
