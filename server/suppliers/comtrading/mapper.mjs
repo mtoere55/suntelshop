@@ -1,13 +1,10 @@
-function pickNumber(...values) {
-  for (const value of values) {
-    if (value === undefined || value === null || value === '') continue;
-    const numberValue = Number(value);
-    if (Number.isFinite(numberValue)) return numberValue;
-  }
-  return null;
-}
+export function mapComTradingProductToCandidate(product = {}) {
+  const supplierProductId = product.id || product.product_id || product.symbol || product.code || null;
 
-function pickText(...values) {
-  for (const value of values) {
-    if (value === undefined || value === null) continue;
-    const textValue = String(value).trim
+  return {
+    id: supplierProductId ? `comtrading-${supplierProductId}` : `comtrading-${Date.now()}`,
+    supplier: 'COM-TRADING',
+    supplierProductId,
+    status: 'supplier_candidate',
+    published: false,
+    approved
