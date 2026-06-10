@@ -1,8 +1,11 @@
-import express from "express";
+﻿import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import { getComTradingSafety } from "./suppliers/comtrading/safety.mjs";
+import { getSupplierCandidates, getSupplierCategories } from "./suppliers/comtrading/store.mjs";
+import { importComTradingSample, importComTradingCategories } from "./suppliers/comtrading/sync.mjs";
 import { fileURLToPath } from "url";
 
 const app = express();
@@ -63,10 +66,10 @@ function slugify(value) {
   return String(value)
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ä/g, "ae")
-    .replace(/ö/g, "oe")
-    .replace(/ü/g, "ue")
-    .replace(/ß/g, "ss")
+    .replace(/Ã¤/g, "ae")
+    .replace(/Ã¶/g, "oe")
+    .replace(/Ã¼/g, "ue")
+    .replace(/ÃŸ/g, "ss")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
@@ -127,11 +130,11 @@ function adminMail() {
 }
 
 function orderMailHtml(order) {
-  const items = (order.items || []).map(i => `<li>${i.qty}× ${i.title} — ${i.lineTotal} €</li>`).join("");
+  const items = (order.items || []).map(i => `<li>${i.qty}Ã— ${i.title} â€” ${i.lineTotal} â‚¬</li>`).join("");
   return `
   <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
     <h2>Sun-TEL Bestellung ${order.orderNo}</h2>
-    <p>Vielen Dank für Ihre Bestellung bei Sun-TEL in Hagen.</p>
+    <p>Vielen Dank fÃ¼r Ihre Bestellung bei Sun-TEL in Hagen.</p>
     <p><b>Status:</b> ${order.status}</p>
     <p><b>Kunde:</b> ${order.customer?.firstName || ""} ${order.customer?.lastName || ""}</p>
     <p><b>Telefon:</b> ${order.customer?.phone || ""}</p>
@@ -140,10 +143,10 @@ function orderMailHtml(order) {
     <p><b>Lieferart:</b> ${order.delivery?.type || ""}</p>
     <h3>Artikel</h3>
     <ul>${items}</ul>
-    <p><b>Gesamt:</b> ${order.total} €</p>
+    <p><b>Gesamt:</b> ${order.total} â‚¬</p>
     <hr />
-    <p>Sun-TEL · Badstraße 6 · 58095 Hagen<br/>
-    Tel.: 02331 3484182 · WhatsApp: 015739684985</p>
+    <p>Sun-TEL Â· BadstraÃŸe 6 Â· 58095 Hagen<br/>
+    Tel.: 02331 3484182 Â· WhatsApp: 015739684985</p>
   </div>`;
 }
 
@@ -156,15 +159,15 @@ function repairMailHtml(repair) {
     <p><b>Kunde:</b> ${repair.customer?.firstName || ""} ${repair.customer?.lastName || ""}</p>
     <p><b>Telefon:</b> ${repair.customer?.phone || ""}</p>
     <p><b>E-Mail:</b> ${repair.customer?.email || ""}</p>
-    <p><b>Gerät:</b> ${repair.device?.brand || ""} ${repair.device?.model || ""}</p>
+    <p><b>GerÃ¤t:</b> ${repair.device?.brand || ""} ${repair.device?.model || ""}</p>
     <p><b>Fehler:</b> ${repair.issue?.type || ""}</p>
     <p><b>Abgabeart:</b> ${repair.delivery || ""}</p>
     <p><b>Beschreibung:</b><br/>${repair.note || ""}</p>
     <p>Formular / Druckansicht:<br/>
     https://handyreparatur.shop/api/repairs/${repair.ticketNo}/print</p>
     <hr />
-    <p>Sun-TEL · Badstraße 6 · 58095 Hagen<br/>
-    Tel.: 02331 3484182 · WhatsApp: 015739684985</p>
+    <p>Sun-TEL Â· BadstraÃŸe 6 Â· 58095 Hagen<br/>
+    Tel.: 02331 3484182 Â· WhatsApp: 015739684985</p>
   </div>`;
 }
 
@@ -193,12 +196,12 @@ function visualKindForProduct(product) {
 
   if (text.includes("iphone") || text.includes("galaxy") || text.includes("smartphone") || text.includes("pixel") || text.includes("redmi") || text.includes("moto") || text.includes("oppo") || text.includes("nokia")) return "phone";
   if (text.includes("book") || text.includes("wallet") || text.includes("tasche")) return "wallet";
-  if (text.includes("hülle") || text.includes("huelle") || text.includes("case") || text.includes("cover")) return "case";
+  if (text.includes("hÃ¼lle") || text.includes("huelle") || text.includes("case") || text.includes("cover")) return "case";
   if (text.includes("panzerglas") || text.includes("schutzfolie") || text.includes("schutzglas")) return "glass";
-  if (text.includes("ladegerät") || text.includes("ladegeraet") || text.includes("charger") || text.includes("adapter")) return "charger";
+  if (text.includes("ladegerÃ¤t") || text.includes("ladegeraet") || text.includes("charger") || text.includes("adapter")) return "charger";
   if (text.includes("kabel") || text.includes("usb") || text.includes("lightning")) return "cable";
   if (text.includes("powerbank")) return "powerbank";
-  if (text.includes("airpods") || text.includes("earbuds") || text.includes("kopfhörer") || text.includes("kopfhoerer") || text.includes("buds")) return "audio";
+  if (text.includes("airpods") || text.includes("earbuds") || text.includes("kopfhÃ¶rer") || text.includes("kopfhoerer") || text.includes("buds")) return "audio";
   if (text.includes("sim") || text.includes("lyca") || text.includes("ortel") || text.includes("ayy")) return "sim";
   if (text.includes("reparatur") || text.includes("service") || text.includes("diagnose") || text.includes("akkuwechsel")) return "repair";
   return product.imageType || "accessory";
@@ -210,7 +213,7 @@ function buildAIProductSvg(product) {
   const brand = xmlEscape(product.brand || "Suntel");
   const category = xmlEscape(product.category || "Shop");
   const price = Number(product.price || 0);
-  const priceText = price > 0 ? `${price.toLocaleString("de-DE", { minimumFractionDigits: price % 1 ? 2 : 0, maximumFractionDigits: 2 })} €` : "auf Anfrage";
+  const priceText = price > 0 ? `${price.toLocaleString("de-DE", { minimumFractionDigits: price % 1 ? 2 : 0, maximumFractionDigits: 2 })} â‚¬` : "auf Anfrage";
   const kind = visualKindForProduct(product);
 
   const palette = {
@@ -334,13 +337,13 @@ function buildAIProductSvg(product) {
   <rect x="42" y="42" width="816" height="616" rx="38" fill="rgba(255,255,255,.045)" stroke="rgba(145,201,255,.18)"/>
 
   <text x="76" y="98" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">Sun-TEL</text>
-  <text x="76" y="130" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ff9d2e">KI-Symbolbild · Hagen</text>
+  <text x="76" y="130" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ff9d2e">KI-Symbolbild Â· Hagen</text>
 
   ${drawing}
 
   <rect x="75" y="475" width="750" height="125" rx="24" fill="rgba(2,8,17,.58)" stroke="rgba(145,201,255,.20)"/>
   <text x="105" y="525" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#ffffff">${title}</text>
-  <text x="105" y="562" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#a6b8c9">${brand} · ${category}</text>
+  <text x="105" y="562" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#a6b8c9">${brand} Â· ${category}</text>
   <text x="105" y="604" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ff9d2e">${xmlEscape(priceText)}</text>
 
   <text x="825" y="632" text-anchor="end" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#8bffd4">Symbolbild</text>
@@ -415,7 +418,7 @@ app.get("/api/business", (_req, res) => {
     name: "Sun-TEL",
     seoName: "Suntel",
     owner: "Ali Sun",
-    address: "Badstraße 6, 58095 Hagen",
+    address: "BadstraÃŸe 6, 58095 Hagen",
     phone: "02331 3484182",
     whatsapp: "015739684985",
     email: "suntel58135@gmail.com",
@@ -561,7 +564,7 @@ h1{font-size:26px;margin:0 0 5px}
 <body>
 <button onclick="window.print()">Drucken / als PDF speichern</button>
 <h1>Sun-TEL Reparaturauftrag</h1>
-<div>Badstraße 6, 58095 Hagen · 02331 3484182 · suntel58135@gmail.com</div>
+<div>BadstraÃŸe 6, 58095 Hagen Â· 02331 3484182 Â· suntel58135@gmail.com</div>
 <div><b>Auftragsnummer:</b> ${r.ticketNo}</div>
 <div class="grid">
 <div class="box">
@@ -572,7 +575,7 @@ h1{font-size:26px;margin:0 0 5px}
 <p>Adresse: ${r.customer.address || ""}</p>
 </div>
 <div class="box">
-<h3>Gerätedaten</h3>
+<h3>GerÃ¤tedaten</h3>
 <p>Marke: ${r.device.brand || ""}</p>
 <p>Modell: ${r.device.model || ""}</p>
 <p>IMEI/Seriennummer: ${r.device.serial || ""}</p>
@@ -586,7 +589,7 @@ h1{font-size:26px;margin:0 0 5px}
 </div>
 <div class="box small">
 <h3>Kundenhinweise / Annahmebedingungen</h3>
-<p>Der Kunde bestätigt, dass die oben genannten Angaben korrekt sind. Bei Reparaturen können Datenverluste nicht vollständig ausgeschlossen werden. Der Kunde ist für eine vorherige Datensicherung verantwortlich. Sichtbare und nicht sichtbare Vorschäden können die Reparatur beeinflussen. Ersatzteilpreise und Reparaturdauer können je nach Gerät und Verfügbarkeit variieren. Eine Reparatur erfolgt erst nach Prüfung und Freigabe, sofern ein zusätzlicher Kostenvoranschlag notwendig ist.</p>
+<p>Der Kunde bestÃ¤tigt, dass die oben genannten Angaben korrekt sind. Bei Reparaturen kÃ¶nnen Datenverluste nicht vollstÃ¤ndig ausgeschlossen werden. Der Kunde ist fÃ¼r eine vorherige Datensicherung verantwortlich. Sichtbare und nicht sichtbare VorschÃ¤den kÃ¶nnen die Reparatur beeinflussen. Ersatzteilpreise und Reparaturdauer kÃ¶nnen je nach GerÃ¤t und VerfÃ¼gbarkeit variieren. Eine Reparatur erfolgt erst nach PrÃ¼fung und Freigabe, sofern ein zusÃ¤tzlicher Kostenvoranschlag notwendig ist.</p>
 </div>
 <div class="sign">
 <div class="line">Ort, Datum</div>
@@ -633,6 +636,114 @@ app.get("/api/admin/summary", requireAdmin, (_req, res) => {
 
 
 
+app.get("/api/admin/suppliers/comtrading/status", requireAdmin, (_req, res) => {
+  const safety = getComTradingSafety();
+  const candidates = getSupplierCandidates();
+  const categories = getSupplierCategories();
+
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    mode: "read-only-foundation",
+    safety,
+    counts: {
+      candidates: candidates.length,
+      categories: categories.length,
+      approved: candidates.filter((item) => item.approved === true).length,
+      published: candidates.filter((item) => item.published === true).length,
+      rejected: candidates.filter((item) => item.status === "rejected").length
+    },
+    warnings: [
+      "No automatic public product publish in SNT-COM-1.",
+      "No supplier order write in SNT-COM-1.",
+      "No CidenBridge write in SNT-COM-1.",
+      "API key must stay only in the live server .env."
+    ],
+    time: new Date().toISOString()
+  });
+});
+
+app.get("/api/admin/suppliers/comtrading/safety", requireAdmin, (_req, res) => {
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    safety: getComTradingSafety(),
+    time: new Date().toISOString()
+  });
+});
+
+app.get("/api/admin/suppliers/comtrading/candidates", requireAdmin, (_req, res) => {
+  const candidates = getSupplierCandidates();
+
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    count: candidates.length,
+    candidates
+  });
+});
+
+app.get("/api/admin/suppliers/comtrading/categories", requireAdmin, (_req, res) => {
+  const categories = getSupplierCategories();
+
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    count: categories.length,
+    categories
+  });
+});
+
+app.post("/api/admin/suppliers/comtrading/import-sample", requireAdmin, async (req, res) => {
+  try {
+    const requestedLimit = Number(req.body?.limit || req.query?.limit || 10);
+    const limit = Math.max(1, Math.min(25, requestedLimit));
+    const result = await importComTradingSample(limit);
+
+    res.json({
+      ok: Boolean(result.ok),
+      supplier: "COM-TRADING",
+      action: "import-sample",
+      readOnly: true,
+      autoPublish: false,
+      supplierOrderWrite: false,
+      cidenBridgeWrite: false,
+      result
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      supplier: "COM-TRADING",
+      action: "import-sample",
+      error: String(err?.message || err)
+    });
+  }
+});
+
+app.post("/api/admin/suppliers/comtrading/import-categories", requireAdmin, async (_req, res) => {
+  try {
+    const result = await importComTradingCategories();
+
+    res.json({
+      ok: Boolean(result.ok),
+      supplier: "COM-TRADING",
+      action: "import-categories",
+      readOnly: true,
+      autoPublish: false,
+      supplierOrderWrite: false,
+      cidenBridgeWrite: false,
+      result
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      supplier: "COM-TRADING",
+      action: "import-categories",
+      error: String(err?.message || err)
+    });
+  }
+});
+
 function inferProductFromTitle(titleRaw) {
   const title = String(titleRaw || "").trim();
   const lower = title.toLowerCase();
@@ -643,15 +754,15 @@ function inferProductFromTitle(titleRaw) {
 
   let brand = "Suntel";
   let model = title;
-  let category = "Zubehör";
+  let category = "ZubehÃ¶r";
   let subcategory = "Allgemein";
   let badge = "Neu";
   let imageType = "accessory";
   let price = 9.90;
   let stock = 1;
-  let warranty = "12 Monate Gewährleistung";
-  let specs = ["Sofort verfügbar", "Top Qualität", "Beratung im Shop"];
-  let description = `${title} bei Suntel in Hagen. Persönliche Beratung, faire Preise und Abholung im Shop möglich.`;
+  let warranty = "12 Monate GewÃ¤hrleistung";
+  let specs = ["Sofort verfÃ¼gbar", "Top QualitÃ¤t", "Beratung im Shop"];
+  let description = `${title} bei Suntel in Hagen. PersÃ¶nliche Beratung, faire Preise und Abholung im Shop mÃ¶glich.`;
 
   const brandRules = [
     ["Apple", ["iphone", "ipad", "airpods", "apple", "lightning", "magsafe"]],
@@ -665,7 +776,7 @@ function inferProductFromTitle(titleRaw) {
     ["Nokia", ["nokia"]],
     ["Sony", ["sony", "xperia"]],
     ["OnePlus", ["oneplus", "nord"]],
-    ["Ayyıldız", ["ayyildiz", "ayyıldız", "ay yildiz", "ay yıldız"]],
+    ["AyyÄ±ldÄ±z", ["ayyildiz", "ayyÄ±ldÄ±z", "ay yildiz", "ay yÄ±ldÄ±z"]],
     ["Lyca Mobile", ["lyca"]],
     ["Ortel Mobile", ["ortel"]],
     ["Anker", ["anker"]],
@@ -682,99 +793,99 @@ function inferProductFromTitle(titleRaw) {
   }
 
   if (includesAny(["iphone", "galaxy", "redmi", "poco", "pixel", "motorola", "moto ", "oppo", "reno", "honor", "nokia", "xperia", "oneplus", "huawei"])) {
-    category = lower.includes("gebraucht") || lower.includes("geprüft") || lower.includes("refurbished")
+    category = lower.includes("gebraucht") || lower.includes("geprÃ¼ft") || lower.includes("refurbished")
       ? "Gebrauchte Smartphones"
       : "Neue Smartphones";
     subcategory = "Smartphone";
     imageType = "phone";
-    badge = category === "Gebrauchte Smartphones" ? "Geprüft" : "Neu";
+    badge = category === "Gebrauchte Smartphones" ? "GeprÃ¼ft" : "Neu";
     price = category === "Gebrauchte Smartphones" ? 249 : 349;
     stock = 1;
-    specs = ["128 GB", "5G", "Geprüfte Qualität"];
-    warranty = category === "Gebrauchte Smartphones" ? "12 Monate Gewährleistung" : "24 Monate Herstellergarantie";
-    description = `${title} bei Suntel in Hagen. Smartphone mit persönlicher Beratung, Abholung im Shop und passendem Zubehör.`;
+    specs = ["128 GB", "5G", "GeprÃ¼fte QualitÃ¤t"];
+    warranty = category === "Gebrauchte Smartphones" ? "12 Monate GewÃ¤hrleistung" : "24 Monate Herstellergarantie";
+    description = `${title} bei Suntel in Hagen. Smartphone mit persÃ¶nlicher Beratung, Abholung im Shop und passendem ZubehÃ¶r.`;
   }
 
-  if (includesAny(["case", "hülle", "huelle", "cover", "schutzhülle", "schutzhulle", "tasche"])) {
-    category = "Zubehör";
-    subcategory = includesAny(["book", "wallet", "tasche"]) ? "Handyhüllen" : "Handyhüllen";
+  if (includesAny(["case", "hÃ¼lle", "huelle", "cover", "schutzhÃ¼lle", "schutzhulle", "tasche"])) {
+    category = "ZubehÃ¶r";
+    subcategory = includesAny(["book", "wallet", "tasche"]) ? "HandyhÃ¼llen" : "HandyhÃ¼llen";
     imageType = "case";
-    badge = includesAny(["book", "wallet", "tasche"]) ? "Book Case" : "Hülle";
+    badge = includesAny(["book", "wallet", "tasche"]) ? "Book Case" : "HÃ¼lle";
     price = includesAny(["book", "wallet", "tasche"]) ? 14.90 : 12.90;
     specs = includesAny(["book", "wallet", "tasche"])
-      ? ["Magnetverschluss", "Kartenfach", "Klapphülle"]
-      : ["Passgenau", "Stoßfest", "Mehrere Farben"];
-    description = `${title} bei Suntel in Hagen. Passende Handyhülle mit Schutzfunktion und hochwertiger Verarbeitung.`;
+      ? ["Magnetverschluss", "Kartenfach", "KlapphÃ¼lle"]
+      : ["Passgenau", "StoÃŸfest", "Mehrere Farben"];
+    description = `${title} bei Suntel in Hagen. Passende HandyhÃ¼lle mit Schutzfunktion und hochwertiger Verarbeitung.`;
   }
 
   if (includesAny(["panzerglas", "schutzglas", "schutzfolie", "display folie", "displayfolie", "tempered glass"])) {
-    category = "Zubehör";
+    category = "ZubehÃ¶r";
     subcategory = "Panzerglas & Folien";
     imageType = "glass";
     badge = includesAny(["kamera"]) ? "Kamera Schutz" : "Schutz";
     price = includesAny(["kamera"]) ? 5.90 : 7.90;
-    specs = ["9H Härte", "Kratzfest", "Montage möglich"];
-    description = `${title} bei Suntel in Hagen. Schutzglas oder Folie für zuverlässigen Displayschutz, auf Wunsch mit Montage im Shop.`;
+    specs = ["9H HÃ¤rte", "Kratzfest", "Montage mÃ¶glich"];
+    description = `${title} bei Suntel in Hagen. Schutzglas oder Folie fÃ¼r zuverlÃ¤ssigen Displayschutz, auf Wunsch mit Montage im Shop.`;
   }
 
-  if (includesAny(["ladegerät", "ladegeraet", "charger", "power adapter", "netzteil", "20w", "25w", "30w", "45w", "65w"])) {
-    category = "Zubehör";
-    subcategory = "Ladegeräte";
+  if (includesAny(["ladegerÃ¤t", "ladegeraet", "charger", "power adapter", "netzteil", "20w", "25w", "30w", "45w", "65w"])) {
+    category = "ZubehÃ¶r";
+    subcategory = "LadegerÃ¤te";
     imageType = "charger";
     badge = "Schnellladen";
     price = lower.includes("65w") ? 39.90 : lower.includes("45w") ? 29.90 : lower.includes("30w") ? 24.90 : 19.90;
-    specs = ["USB-C", "Schnellladen", "Sofort verfügbar"];
-    description = `${title} bei Suntel in Hagen. Ladegerät für schnelles und sicheres Laden im Alltag.`;
+    specs = ["USB-C", "Schnellladen", "Sofort verfÃ¼gbar"];
+    description = `${title} bei Suntel in Hagen. LadegerÃ¤t fÃ¼r schnelles und sicheres Laden im Alltag.`;
   }
 
   if (includesAny(["kabel", "usb-c", "lightning", "usb c", "datenkabel"])) {
-    category = "Zubehör";
+    category = "ZubehÃ¶r";
     subcategory = "Kabel";
     imageType = "cable";
     badge = "Kabel";
     price = lower.includes("2m") ? 12.90 : 9.90;
-    specs = ["Schnelles Laden", "Datenübertragung", "Robuste Qualität"];
-    description = `${title} bei Suntel in Hagen. Passendes Ladekabel und Datenkabel für Smartphone und Zubehör.`;
+    specs = ["Schnelles Laden", "DatenÃ¼bertragung", "Robuste QualitÃ¤t"];
+    description = `${title} bei Suntel in Hagen. Passendes Ladekabel und Datenkabel fÃ¼r Smartphone und ZubehÃ¶r.`;
   }
 
   if (includesAny(["powerbank", "power bank", "10000", "10.000", "20000", "20.000"])) {
-    category = "Zubehör";
+    category = "ZubehÃ¶r";
     subcategory = "Powerbanks";
     imageType = "powerbank";
     badge = "Powerbank";
     price = includesAny(["20000", "20.000"]) ? 34.90 : 19.90;
-    specs = ["Mobile Energie", "USB-C", "Sofort verfügbar"];
-    description = `${title} bei Suntel in Hagen. Mobile Powerbank für unterwegs, Reisen und Alltag.`;
+    specs = ["Mobile Energie", "USB-C", "Sofort verfÃ¼gbar"];
+    description = `${title} bei Suntel in Hagen. Mobile Powerbank fÃ¼r unterwegs, Reisen und Alltag.`;
   }
 
-  if (includesAny(["airpods", "earbuds", "kopfhörer", "kopfhoerer", "headset", "bluetooth", "buds", "jbl"])) {
-    category = "Zubehör";
-    subcategory = "Kopfhörer & Audio";
+  if (includesAny(["airpods", "earbuds", "kopfhÃ¶rer", "kopfhoerer", "headset", "bluetooth", "buds", "jbl"])) {
+    category = "ZubehÃ¶r";
+    subcategory = "KopfhÃ¶rer & Audio";
     imageType = "audio";
     badge = "Audio";
     price = includesAny(["airpods", "pro"]) ? 129.00 : includesAny(["jbl", "bluetooth"]) ? 39.90 : 19.90;
-    specs = ["Bluetooth", "Guter Klang", "Sofort verfügbar"];
-    description = `${title} bei Suntel in Hagen. Audio-Zubehör für Musik, Telefonie und Alltag.`;
+    specs = ["Bluetooth", "Guter Klang", "Sofort verfÃ¼gbar"];
+    description = `${title} bei Suntel in Hagen. Audio-ZubehÃ¶r fÃ¼r Musik, Telefonie und Alltag.`;
   }
 
   if (includesAny(["halterung", "handyhalter", "auto", "kfz", "car mount"])) {
-    category = "Zubehör";
-    subcategory = "Auto Zubehör";
+    category = "ZubehÃ¶r";
+    subcategory = "Auto ZubehÃ¶r";
     imageType = "holder";
     badge = "Auto";
     price = 14.90;
-    specs = ["Auto Zubehör", "Sicherer Halt", "Einfache Montage"];
-    description = `${title} bei Suntel in Hagen. Handyhalterung und Auto-Zubehör für sichere Nutzung unterwegs.`;
+    specs = ["Auto ZubehÃ¶r", "Sicherer Halt", "Einfache Montage"];
+    description = `${title} bei Suntel in Hagen. Handyhalterung und Auto-ZubehÃ¶r fÃ¼r sichere Nutzung unterwegs.`;
   }
 
-  if (includesAny(["sim", "prepaid", "ayyildiz", "ayyıldız", "lyca", "ortel", "aufladung", "tarif"])) {
+  if (includesAny(["sim", "prepaid", "ayyildiz", "ayyÄ±ldÄ±z", "lyca", "ortel", "aufladung", "tarif"])) {
     category = "SIM-Karten & Tarife";
     subcategory = "Prepaid SIM";
     imageType = "sim";
     badge = "SIM";
     price = includesAny(["aufladung", "tarifberatung", "beratung"]) ? 0 : 9.99;
-    specs = ["Aktivierung im Shop", "Aufladung möglich", "Tarifberatung"];
-    description = `${title} bei Suntel in Hagen. SIM-Karte, Aktivierung, Aufladung und persönliche Tarifberatung direkt im Shop.`;
+    specs = ["Aktivierung im Shop", "Aufladung mÃ¶glich", "Tarifberatung"];
+    description = `${title} bei Suntel in Hagen. SIM-Karte, Aktivierung, Aufladung und persÃ¶nliche Tarifberatung direkt im Shop.`;
   }
 
   if (includesAny(["passfoto", "passbild", "biometrisch", "kopie", "fotokopie", "scan", "druck"])) {
@@ -793,7 +904,7 @@ function inferProductFromTitle(titleRaw) {
     imageType = "service";
     badge = "Reparatur";
     price = 0;
-    specs = ["Vor Ort in Hagen", "Schnell & zuverlässig", "Persönliche Beratung"];
+    specs = ["Vor Ort in Hagen", "Schnell & zuverlÃ¤ssig", "PersÃ¶nliche Beratung"];
     description = `${title} bei Suntel in Hagen. Reparaturservice mit Diagnose, Beratung und transparenter Abwicklung.`;
   }
 
@@ -812,7 +923,7 @@ function inferProductFromTitle(titleRaw) {
     description,
     warranty,
     imageUrl: `https://loremflickr.com/520/420/${encodeURIComponent(imageType === "phone" ? "smartphone,product" : imageType + ",phone,accessory")}?lock=${Date.now().toString().slice(-6)}`,
-    note: "Automatisch aus dem Produktnamen vorgeschlagen. Bitte Preis und Bild vor Veröffentlichung kurz prüfen."
+    note: "Automatisch aus dem Produktnamen vorgeschlagen. Bitte Preis und Bild vor VerÃ¶ffentlichung kurz prÃ¼fen."
   };
 }
 
@@ -912,7 +1023,7 @@ app.post("/api/admin/products", requireAdmin, (req, res) => {
     title: body.title || "Neues Produkt",
     brand: body.brand || "Suntel",
     model: body.model || "",
-    category: body.category || "Zubehör",
+    category: body.category || "ZubehÃ¶r",
     subcategory: body.subcategory || "Allgemein",
     price: Number(body.price || 0),
     oldPrice: body.oldPrice ? Number(body.oldPrice) : null,
@@ -925,9 +1036,9 @@ app.post("/api/admin/products", requireAdmin, (req, res) => {
     imageAlt: body.imageAlt || body.title || "",
     colorA: body.colorA || "#0f2a44",
     colorB: body.colorB || "#ff7a00",
-    specs: Array.isArray(body.specs) ? body.specs : String(body.specs || "Sofort verfügbar,Top Qualität").split(",").map((x) => x.trim()).filter(Boolean),
+    specs: Array.isArray(body.specs) ? body.specs : String(body.specs || "Sofort verfÃ¼gbar,Top QualitÃ¤t").split(",").map((x) => x.trim()).filter(Boolean),
     description: body.description || "",
-    warranty: body.warranty || "12 Monate Gewährleistung",
+    warranty: body.warranty || "12 Monate GewÃ¤hrleistung",
     seo: body.seo || "",
     createdAt: new Date().toISOString()
   };
@@ -980,9 +1091,10 @@ app.use(express.static(distDir));
 app.use((_req, res) => {
   const indexFile = path.join(distDir, "index.html");
   if (fs.existsSync(indexFile)) return res.sendFile(indexFile);
-  return res.status(200).send("SuntelShop build fehlt. Bitte npm run build ausführen.");
+  return res.status(200).send("SuntelShop build fehlt. Bitte npm run build ausfÃ¼hren.");
 });
 
 app.listen(PORT, "127.0.0.1", () => {
-  console.log(`SuntelShop Full V1 läuft auf http://127.0.0.1:${PORT}`);
+  console.log(`SuntelShop Full V1 lÃ¤uft auf http://127.0.0.1:${PORT}`);
 });
+
