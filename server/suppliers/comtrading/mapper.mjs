@@ -10,14 +10,4 @@ function pickNumber(...values) {
 function pickText(...values) {
   for (const value of values) {
     if (value === undefined || value === null) continue;
-    const textValue = String(value).trim();
-    if (textValue) return textValue;
-  }
-  return '';
-}
-
-function getSuggestedMarginMultiplier(product = {}) {
-  const haystack = `${product.category || ''} ${product.name || ''}`.toLowerCase();
-
-  if (
-    haystack.includes('pokrowce') ||
+    const textValue = String(value).trim
