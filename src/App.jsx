@@ -1120,6 +1120,7 @@ function AdminPage() {
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [productSearch, setProductSearch] = useState("");
+  const [supplierData, setSupplierData] = useState({ candidates:[], status:null, loading:false, error:"" });
 
   const emptyProduct = {
     title:"",
@@ -1155,7 +1156,38 @@ function AdminPage() {
     }
   };
 
+  const loadSupplierCandidates = async (tok = token) => {
+    if (!tok) return;
+
+    setSupplierData((old) => ({ ...old, loading:true, error:"" }));
+
+    try {
+      const [statusRes, candidatesRes] = await Promise.all([
+        fetch("/api/admin/suppliers/comtrading/status", { headers:{ Authorization:`Bearer ${tok}` } }),
+        fetch("/api/admin/suppliers/comtrading/candidates", { headers:{ Authorization:`Bearer ${tok}` } })
+      ]);
+
+      if (!statusRes.ok || !candidatesRes.ok) {
+        throw new Error("COM-TRADING Kandidaten konnten nicht geladen werden.");
+      }
+
+      const status = await statusRes.json();
+      const candidatesPayload = await candidatesRes.json();
+      const candidates = candidatesPayload.candidates || candidatesPayload.items || candidatesPayload.products || [];
+
+      setSupplierData({ candidates, status, loading:false, error:"" });
+    } catch (err) {
+      setSupplierData((old) => ({ ...old, loading:false, error:String(err.message || err) }));
+    }
+  };
+
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (token && tab === "suppliers" && !supplierData.status && !supplierData.loading) {
+      loadSupplierCandidates();
+    }
+  }, [tab, token]);
 
   const doLogin = async (e) => {
     e.preventDefault();
@@ -1448,6 +1480,7 @@ function AdminPage() {
         <button onClick={() => setTab("products")}>Produkte ({data.products.length})</button>
         <button onClick={() => setTab("orders")}>Bestellungen ({data.orders.length})</button>
         <button onClick={() => setTab("repairs")}>Reparaturen ({data.repairs.length})</button>
+        <button onClick={() => { setTab("suppliers"); loadSupplierCandidates(); }}>COM-TRADING ({supplierData.candidates.length})</button>
         <button onClick={() => { localStorage.removeItem("suntel_admin_token"); setToken(""); }}>Logout</button>
       </aside>
 
@@ -1571,6 +1604,48 @@ function AdminPage() {
                   <em>{p.stock > 0 ? `${p.stock} Stück` : "0"}</em>
                   <button onClick={() => editProduct(p)}>Bearbeiten</button>
                   <button className="danger" onClick={() => deleteProduct(p.id)}>Löschen</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "suppliers" && (
+          <div>
+            <div className="adminListHead">
+              <div>
+                <h1>COM-TRADING Aday Ürünleri</h1>
+                <p>Read-only Lieferantenkandidaten. Keine automatische Shop-Veröffentlichung, keine Bestellung, kein CidenBridge Write.</p>
+              </div>
+              <button type="button" onClick={() => loadSupplierCandidates()}>Neu laden</button>
+            </div>
+
+            {supplierData.loading ? <div className="adminMessage">COM-TRADING Kandidaten werden geladen...</div> : null}
+            {supplierData.error ? <div className="adminMessage danger">{supplierData.error}</div> : null}
+
+            {supplierData.status ? (
+              <div className="adminStats">
+                <b>{supplierData.status.counts?.candidates || 0}<span>Aday ürün</span></b>
+                <b>{supplierData.status.counts?.published || 0}<span>Yayınlanan</span></b>
+                <b>{supplierData.status.safety?.enabled ? "ON" : "OFF"}<span>COM-TRADING</span></b>
+              </div>
+            ) : null}
+
+            <div className="adminCards">
+              {supplierData.candidates.map((candidate) => (
+                <div className="adminCard" key={candidate.id}>
+                  {candidate.imageUrl ? <img src={candidate.imageUrl} alt={candidate.title} style={{ width:"100%", maxHeight:160, objectFit:"contain", borderRadius:12, background:"#fff" }} /> : null}
+                  <h3>{candidate.title || candidate.id}</h3>
+                  <p><b>Supplier ID:</b> {candidate.supplierProductId} · <b>EAN:</b> {candidate.ean || "-"}</p>
+                  <p><b>Kategori:</b> {candidate.sourceCategory || "-"}</p>
+                  <p><b>Alış brüt:</b> {candidate.supplierGrossPrice ?? candidate.supplierPrice ?? "-"} € · <b>Net:</b> {candidate.supplierNetPrice ?? "-"} €</p>
+                  <p><b>Önerilen satış:</b> {candidate.suggestedPublicPrice ?? "-"} € · <b>Stok:</b> {candidate.stock ?? "-"}</p>
+                  <p><b>Durum:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
+                  <p><b>Shop yayını:</b> {candidate.published ? "Ja" : "Nein"} · <b>Onay:</b> {candidate.approved ? "Ja" : "Nein"}</p>
+                  <details>
+                    <summary>Raw supplier payload</summary>
+                    <pre style={{ whiteSpace:"pre-wrap", fontSize:12 }}>{JSON.stringify(candidate.raw || candidate, null, 2)}</pre>
+                  </details>
                 </div>
               ))}
             </div>
