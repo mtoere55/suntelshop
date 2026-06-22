@@ -1703,9 +1703,14 @@ function AdminPage() {
                   <h3>{candidate.title || candidate.id}</h3>
                   <p><b>Supplier ID:</b> {candidate.supplierProductId} · <b>EAN:</b> {candidate.ean || "-"}</p>
                   <p><b>Kategorie:</b> {candidate.sourceCategory || "-"}</p>
-                  <p className="supplierSellPrice"><b>Satış fiyatı:</b> {candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "-"} €</p>
-                  <p><b>Stok:</b> {candidate.stock ?? "-"}</p>
-                  <p><b>Status:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
+                  <p className="supplierSellPrice"><b>Verkaufspreis:</b> {candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "-"} €</p>
+                  <p><b>Bestand:</b> {candidate.stock ?? "-"}</p>
+                  <p><b>Status:</b> {(
+  String(candidate.supplierStatus || "").toLowerCase().includes("niedost") ||
+  String(candidate.supplierStatus || "").toLowerCase().includes("niedostępny")
+) ? "Nicht verfügbar" : (
+  String(candidate.supplierStatus || "").trim() ? "Verfügbar" : "-"
+)} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
                   <p><b>Shop-Veröffentlichung:</b> {candidate.published ? "Ja" : "Nein"} · <b>Freigabe:</b> {candidate.approved ? "Ja" : "Nein"}</p>
                   {candidate.reviewStatus ? <p><b>Review:</b> {candidate.reviewStatus} · <b>Manueller Preis:</b> {candidate.review?.publicPrice || "-"} €</p> : null}
                   <div className="adminFormActions">
