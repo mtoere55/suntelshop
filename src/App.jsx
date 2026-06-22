@@ -229,6 +229,10 @@ function App() {
   if (path.includes("reparatur-hagen") || path.includes("akkuwechsel-hagen")) page = <SeoPage path={path} navigate={navigate} />;
   if (["/impressum", "/datenschutz", "/agb"].includes(path)) page = <LegalPage path={path} business={business} />;
 
+  if (path === "/admin") {
+    return <div className="app adminApp">{page}</div>;
+  }
+
   return (
     <div className="app">
       <Header business={business} cartCount={cartCount} query={query} setQuery={setQuery} navigate={navigate} />
