@@ -35,6 +35,23 @@ export function saveSupplierCandidates(products) {
   return products;
 }
 
+
+export function updateSupplierCandidate(id, patch) {
+  const products = getSupplierCandidates();
+  const idx = products.findIndex((item) => String(item.id) === String(id) || String(item.supplierProductId) === String(id));
+
+  if (idx < 0) return null;
+
+  products[idx] = {
+    ...products[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+
+  writeJson(PRODUCTS_FILE, products);
+  return products[idx];
+}
+
 export function getSupplierCategories() {
   return readJson(CATEGORIES_FILE, []);
 }

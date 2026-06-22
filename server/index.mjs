@@ -4,7 +4,7 @@ import fs from "fs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { getComTradingSafety } from "./suppliers/comtrading/safety.mjs";
-import { getSupplierCandidates, getSupplierCategories } from "./suppliers/comtrading/store.mjs";
+import { getSupplierCandidates, getSupplierCategories, updateSupplierCandidate } from "./suppliers/comtrading/store.mjs";
 import { importComTradingSample, importComTradingCategories } from "./suppliers/comtrading/sync.mjs";
 import { fileURLToPath } from "url";
 
@@ -651,7 +651,7 @@ app.get("/api/admin/suppliers/comtrading/status", requireAdmin, (_req, res) => {
       categories: categories.length,
       approved: candidates.filter((item) => item.approved === true).length,
       published: candidates.filter((item) => item.published === true).length,
-      rejected: candidates.filter((item) => item.status === "rejected").length
+      rejected: candidates.filter((item) => item.rejected === true || item.status === "rejected").length
     },
     warnings: [
       "No automatic public product publish in SNT-COM-1.",
@@ -680,6 +680,49 @@ app.get("/api/admin/suppliers/comtrading/candidates", requireAdmin, (_req, res) 
     supplier: "COM-TRADING",
     count: candidates.length,
     candidates
+  });
+});
+
+
+app.patch("/api/admin/suppliers/comtrading/candidates/:id/review", requireAdmin, (req, res) => {
+  const body = req.body || {};
+  const reviewStatus = String(body.reviewStatus || body.status || "reviewed").trim().toLowerCase();
+
+  if (!["reviewed", "approved", "rejected"].includes(reviewStatus)) {
+    return res.status(400).json({ ok: false, error: "invalid_review_status" });
+  }
+
+  const candidate = updateSupplierCandidate(req.params.id, {
+    reviewStatus,
+    approved: reviewStatus === "approved",
+    rejected: reviewStatus === "rejected",
+    status: reviewStatus === "rejected" ? "rejected" : "supplier_candidate",
+    published: false,
+    review: {
+      reviewStatus,
+      publicTitle: String(body.publicTitle || "").trim(),
+      publicCategory: String(body.publicCategory || "").trim(),
+      publicSubcategory: String(body.publicSubcategory || "").trim(),
+      publicPrice: Number(body.publicPrice || 0),
+      publicDescription: String(body.publicDescription || "").trim(),
+      note: String(body.note || "").trim(),
+      reviewedAt: new Date().toISOString(),
+    },
+    manualReviewUpdatedAt: new Date().toISOString(),
+  });
+
+  if (!candidate) {
+    return res.status(404).json({ ok: false, error: "candidate_not_found" });
+  }
+
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    mode: "manual-review-only",
+    liveShopPublish: false,
+    supplierOrderWrite: false,
+    cidenBridgeWrite: false,
+    candidate,
   });
 });
 

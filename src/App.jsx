@@ -1185,6 +1185,67 @@ function AdminPage() {
     }
   };
 
+
+  const reviewSupplierCandidate = async (candidate, reviewStatus) => {
+    if (!token || !candidate?.id) return;
+
+    let publicTitle = candidate.review?.publicTitle || candidate.title || "";
+    let publicPrice = candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "";
+    let publicCategory = candidate.review?.publicCategory || candidate.sourceCategory || candidate.category || "Zubehör";
+    let publicSubcategory = candidate.review?.publicSubcategory || candidate.sourceSubcategory || "COM-TRADING Kandidat";
+
+    if (reviewStatus !== "rejected") {
+      const nextTitle = window.prompt("Shop-Titel", publicTitle);
+      if (nextTitle === null) return;
+      publicTitle = nextTitle;
+
+      const nextPrice = window.prompt("Manueller Verkaufspreis EUR", String(publicPrice).replace(".", ","));
+      if (nextPrice === null) return;
+      publicPrice = Number(String(nextPrice).replace(",", "."));
+
+      const nextCategory = window.prompt("Shop-Kategorie", publicCategory);
+      if (nextCategory === null) return;
+      publicCategory = nextCategory;
+
+      const nextSubcategory = window.prompt("Shop-Unterkategorie", publicSubcategory);
+      if (nextSubcategory === null) return;
+      publicSubcategory = nextSubcategory;
+    }
+
+    const note = window.prompt("Review-Notiz", candidate.review?.note || "");
+    if (note === null) return;
+
+    const res = await fetch(`/api/admin/suppliers/comtrading/candidates/${encodeURIComponent(candidate.id)}/review`, {
+      method:"PATCH",
+      headers:{
+        Authorization:`Bearer ${token}`,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        reviewStatus,
+        publicTitle,
+        publicPrice,
+        publicCategory,
+        publicSubcategory,
+        note,
+      })
+    });
+
+    const payload = await res.json().catch(() => ({}));
+
+    if (!res.ok || !payload.ok) {
+      setSupplierData((old) => ({ ...old, error: payload.message || payload.error || "COM-TRADING Review konnte nicht gespeichert werden." }));
+      return;
+    }
+
+    setMessage(reviewStatus === "approved"
+      ? "COM-TRADING Kandidat manuell freigegeben. Shop-Veröffentlichung bleibt aus."
+      : "COM-TRADING Kandidat wurde markiert. Shop-Veröffentlichung bleibt aus."
+    );
+
+    await loadSupplierCandidates();
+  };
+
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
@@ -1646,6 +1707,12 @@ function AdminPage() {
                   <p><b>Önerilen satış:</b> {candidate.suggestedPublicPrice ?? "-"} € · <b>Stok:</b> {candidate.stock ?? "-"}</p>
                   <p><b>Durum:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
                   <p><b>Shop yayını:</b> {candidate.published ? "Ja" : "Nein"} · <b>Onay:</b> {candidate.approved ? "Ja" : "Nein"}</p>
+                  {candidate.reviewStatus ? <p><b>Review:</b> {candidate.reviewStatus} · <b>Manuel fiyat:</b> {candidate.review?.publicPrice || "-"} €</p> : null}
+                  <div className="adminFormActions">
+                    <button type="button" onClick={() => reviewSupplierCandidate(candidate, "approved")}>Manuel onayla</button>
+                    <button type="button" className="btn ghost" onClick={() => reviewSupplierCandidate(candidate, "reviewed")}>Review notu</button>
+                    <button type="button" className="danger" onClick={() => reviewSupplierCandidate(candidate, "rejected")}>Reddet</button>
+                  </div>
                   <details>
                     <summary>Raw supplier payload</summary>
                     <pre style={{ whiteSpace:"pre-wrap", fontSize:12 }}>{JSON.stringify(candidate.raw || candidate, null, 2)}</pre>
