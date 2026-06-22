@@ -726,6 +726,134 @@ app.patch("/api/admin/suppliers/comtrading/candidates/:id/review", requireAdmin,
   });
 });
 
+
+app.post("/api/admin/suppliers/comtrading/candidates/:id/publish", requireAdmin, (req, res) => {
+  const candidates = getSupplierCandidates();
+  const candidate = candidates.find((item) => String(item.id) === String(req.params.id) || String(item.supplierProductId) === String(req.params.id));
+
+  if (!candidate) {
+    return res.status(404).json({ ok: false, error: "candidate_not_found" });
+  }
+
+  if (candidate.published === true && candidate.shopProductId) {
+    return res.json({
+      ok: true,
+      alreadyPublished: true,
+      supplier: "COM-TRADING",
+      productId: candidate.shopProductId,
+      slug: candidate.shopProductSlug,
+      liveShopPublish: true,
+      supplierOrderWrite: false,
+      cidenBridgeWrite: false,
+      candidate,
+    });
+  }
+
+  if (candidate.approved !== true) {
+    return res.status(409).json({
+      ok: false,
+      error: "candidate_not_approved",
+      message: "Candidate must be manually approved before shop publish."
+    });
+  }
+
+  const body = req.body || {};
+  const review = candidate.review || {};
+  const products = readJson("products.json", []);
+
+  const title = String(body.publicTitle || review.publicTitle || candidate.title || "COM-TRADING Produkt").trim();
+  const price = Number(body.publicPrice || review.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || 0);
+  const stock = Number(body.stock ?? candidate.stock ?? 0);
+  const category = String(body.publicCategory || review.publicCategory || candidate.sourceCategory || candidate.category || "Zubehör").trim();
+  const subcategory = String(body.publicSubcategory || review.publicSubcategory || candidate.sourceSubcategory || "COM-TRADING").trim();
+
+  if (!title) {
+    return res.status(400).json({ ok: false, error: "missing_title" });
+  }
+
+  if (!Number.isFinite(price) || price <= 0) {
+    return res.status(400).json({ ok: false, error: "invalid_price" });
+  }
+
+  const product = {
+    id: products.length ? Math.max(...products.map((p) => Number(p.id) || 0)) + 1 : 1,
+    slug: slugify(title || "produkt") + "-" + Date.now(),
+    status: "active",
+    title,
+    brand: String(body.brand || candidate.brand || "COM-TRADING").trim(),
+    model: String(body.model || candidate.model || candidate.supplierProductId || "").trim(),
+    category,
+    subcategory,
+    price,
+    oldPrice: null,
+    stock: Number.isFinite(stock) ? stock : 0,
+    badge: body.badge || "Neu",
+    imageType: body.imageType || "accessory",
+    imageUrl: body.imageUrl || candidate.imageUrl || "",
+    gallery: candidate.imageUrl ? [candidate.imageUrl] : [],
+    imageSource: "COM-TRADING",
+    imageAlt: title,
+    colorA: "#0f2a44",
+    colorB: "#ff7a00",
+    specs: [
+      candidate.supplierProductId ? `Supplier ID: ${candidate.supplierProductId}` : "",
+      candidate.ean ? `EAN: ${candidate.ean}` : "",
+      candidate.available ? "Verfügbar" : "Auf Anfrage"
+    ].filter(Boolean),
+    description: String(body.publicDescription || review.publicDescription || `${title} bei Sun-TEL in Hagen. Persönliche Beratung und Abholung im Shop möglich.`).trim(),
+    warranty: body.warranty || "12 Monate Gewährleistung",
+    seo: "",
+    supplier: {
+      name: "COM-TRADING",
+      candidateId: candidate.id,
+      supplierProductId: candidate.supplierProductId,
+      ean: candidate.ean || "",
+      orderWrite: false
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  ensureLocalAIImage(product, !product.imageUrl);
+
+  products.unshift(product);
+  writeJson("products.json", products);
+
+  const links = readJson("supplier-product-links.json", []);
+  const nextLinks = Array.isArray(links) ? links : [];
+  nextLinks.push({
+    supplier: "COM-TRADING",
+    candidateId: candidate.id,
+    supplierProductId: candidate.supplierProductId,
+    productId: product.id,
+    productSlug: product.slug,
+    publishedAt: new Date().toISOString(),
+    supplierOrderWrite: false,
+    cidenBridgeWrite: false
+  });
+  writeJson("supplier-product-links.json", nextLinks);
+
+  const updatedCandidate = updateSupplierCandidate(candidate.id, {
+    published: true,
+    status: "published",
+    shopProductId: product.id,
+    shopProductSlug: product.slug,
+    publishedAt: new Date().toISOString(),
+    approved: true,
+  });
+
+  res.json({
+    ok: true,
+    supplier: "COM-TRADING",
+    mode: "manual-publish-only",
+    liveShopPublish: true,
+    supplierOrderWrite: false,
+    cidenBridgeWrite: false,
+    product,
+    candidate: updatedCandidate,
+  });
+});
+
 app.get("/api/admin/suppliers/comtrading/categories", requireAdmin, (_req, res) => {
   const categories = getSupplierCategories();
 

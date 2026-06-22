@@ -1246,6 +1246,74 @@ function AdminPage() {
     await loadSupplierCandidates();
   };
 
+
+  const publishSupplierCandidate = async (candidate) => {
+    if (!token || !candidate?.id) return;
+
+    if (!candidate.approved) {
+      setSupplierData((old) => ({ ...old, error: "Bitte Kandidat zuerst manuell freigeben." }));
+      return;
+    }
+
+    if (candidate.published) {
+      setSupplierData((old) => ({ ...old, error: "Dieser Kandidat ist bereits im Shop veröffentlicht." }));
+      return;
+    }
+
+    let publicTitle = candidate.review?.publicTitle || candidate.title || "";
+    let publicPrice = candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "";
+    let publicCategory = candidate.review?.publicCategory || candidate.sourceCategory || candidate.category || "Zubehör";
+    let publicSubcategory = candidate.review?.publicSubcategory || candidate.sourceSubcategory || "COM-TRADING";
+
+    const nextTitle = window.prompt("Finaler Shop-Titel", publicTitle);
+    if (nextTitle === null) return;
+    publicTitle = nextTitle;
+
+    const nextPrice = window.prompt("Finaler Verkaufspreis EUR", String(publicPrice).replace(".", ","));
+    if (nextPrice === null) return;
+    publicPrice = Number(String(nextPrice).replace(",", "."));
+
+    const nextCategory = window.prompt("Finale Shop-Kategorie", publicCategory);
+    if (nextCategory === null) return;
+    publicCategory = nextCategory;
+
+    const nextSubcategory = window.prompt("Finale Shop-Unterkategorie", publicSubcategory);
+    if (nextSubcategory === null) return;
+    publicSubcategory = nextSubcategory;
+
+    const stockValue = window.prompt("Bestand", String(candidate.stock ?? 0));
+    if (stockValue === null) return;
+
+    const ok = window.confirm("Diesen freigegebenen COM-TRADING Kandidaten jetzt als Shop-Produkt veröffentlichen? Es wird keine Lieferantenbestellung und kein CidenBridge Write ausgelöst.");
+    if (!ok) return;
+
+    const res = await fetch(`/api/admin/suppliers/comtrading/candidates/${encodeURIComponent(candidate.id)}/publish`, {
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${token}`,
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        publicTitle,
+        publicPrice,
+        publicCategory,
+        publicSubcategory,
+        stock: Number(String(stockValue).replace(",", ".")),
+      })
+    });
+
+    const payload = await res.json().catch(() => ({}));
+
+    if (!res.ok || !payload.ok) {
+      setSupplierData((old) => ({ ...old, error: payload.message || payload.error || "COM-TRADING Kandidat konnte nicht veröffentlicht werden." }));
+      return;
+    }
+
+    setMessage(`COM-TRADING Kandidat wurde als Shop-Produkt veröffentlicht. Produkt-ID: ${payload.product?.id || payload.productId || "-"}`);
+    await loadSupplierCandidates();
+    await load();
+  };
+
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
@@ -1717,7 +1785,9 @@ function AdminPage() {
                     <button type="button" onClick={() => reviewSupplierCandidate(candidate, "approved")}>Manuell freigeben</button>
                     <button type="button" className="btn ghost" onClick={() => reviewSupplierCandidate(candidate, "reviewed")}>Review-Notiz</button>
                     <button type="button" className="danger" onClick={() => reviewSupplierCandidate(candidate, "rejected")}>Ablehnen</button>
+                    {candidate.approved && !candidate.published ? <button type="button" className="btn primary" onClick={() => publishSupplierCandidate(candidate)}>In Shop veröffentlichen</button> : null}
                   </div>
+                  {candidate.published ? <p><b>Shop-Produkt:</b> #{candidate.shopProductId || "-"} · {candidate.shopProductSlug || ""}</p> : null}
                   <details>
                     <summary>Raw supplier payload</summary>
                     <pre style={{ whiteSpace:"pre-wrap", fontSize:12 }}>{JSON.stringify(candidate.raw || candidate, null, 2)}</pre>
