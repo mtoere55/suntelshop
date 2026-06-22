@@ -1703,8 +1703,8 @@ function AdminPage() {
                   <h3>{candidate.title || candidate.id}</h3>
                   <p><b>Supplier ID:</b> {candidate.supplierProductId} · <b>EAN:</b> {candidate.ean || "-"}</p>
                   <p><b>Kategori:</b> {candidate.sourceCategory || "-"}</p>
-                  <p><b>Alış brüt:</b> {candidate.supplierGrossPrice ?? candidate.supplierPrice ?? "-"} € · <b>Net:</b> {candidate.supplierNetPrice ?? "-"} €</p>
-                  <p><b>Önerilen satış:</b> {candidate.suggestedPublicPrice ?? "-"} € · <b>Stok:</b> {candidate.stock ?? "-"}</p>
+                  <p className="supplierSellPrice"><b>Satış fiyatı:</b> {candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "-"} €</p>
+                  <p><b>Stok:</b> {candidate.stock ?? "-"}</p>
                   <p><b>Durum:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
                   <p><b>Shop yayını:</b> {candidate.published ? "Ja" : "Nein"} · <b>Onay:</b> {candidate.approved ? "Ja" : "Nein"}</p>
                   {candidate.reviewStatus ? <p><b>Review:</b> {candidate.reviewStatus} · <b>Manuel fiyat:</b> {candidate.review?.publicPrice || "-"} €</p> : null}
