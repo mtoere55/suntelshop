@@ -1679,7 +1679,7 @@ function AdminPage() {
           <div>
             <div className="adminListHead">
               <div>
-                <h1>COM-TRADING Aday Ürünleri</h1>
+                <h1>COM-TRADING Lieferantenkandidaten</h1>
                 <p>Read-only Lieferantenkandidaten. Keine automatische Shop-Veröffentlichung, keine Bestellung, kein CidenBridge Write.</p>
               </div>
               <button type="button" onClick={() => loadSupplierCandidates()}>Neu laden</button>
@@ -1690,8 +1690,8 @@ function AdminPage() {
 
             {supplierData.status ? (
               <div className="adminStats">
-                <b>{supplierData.status.counts?.candidates || 0}<span>Aday ürün</span></b>
-                <b>{supplierData.status.counts?.published || 0}<span>Yayınlanan</span></b>
+                <b>{supplierData.status.counts?.candidates || 0}<span>Kandidaten</span></b>
+                <b>{supplierData.status.counts?.published || 0}<span>Veröffentlicht</span></b>
                 <b>{supplierData.status.safety?.enabled ? "ON" : "OFF"}<span>COM-TRADING</span></b>
               </div>
             ) : null}
@@ -1702,16 +1702,16 @@ function AdminPage() {
                   {candidate.imageUrl ? <img src={candidate.imageUrl} alt={candidate.title} style={{ width:"100%", maxHeight:160, objectFit:"contain", borderRadius:12, background:"#fff" }} /> : null}
                   <h3>{candidate.title || candidate.id}</h3>
                   <p><b>Supplier ID:</b> {candidate.supplierProductId} · <b>EAN:</b> {candidate.ean || "-"}</p>
-                  <p><b>Kategori:</b> {candidate.sourceCategory || "-"}</p>
+                  <p><b>Kategorie:</b> {candidate.sourceCategory || "-"}</p>
                   <p className="supplierSellPrice"><b>Satış fiyatı:</b> {candidate.review?.publicPrice || candidate.suggestedPublicPrice || candidate.supplierGrossPrice || candidate.supplierPrice || "-"} €</p>
                   <p><b>Stok:</b> {candidate.stock ?? "-"}</p>
-                  <p><b>Durum:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
-                  <p><b>Shop yayını:</b> {candidate.published ? "Ja" : "Nein"} · <b>Onay:</b> {candidate.approved ? "Ja" : "Nein"}</p>
-                  {candidate.reviewStatus ? <p><b>Review:</b> {candidate.reviewStatus} · <b>Manuel fiyat:</b> {candidate.review?.publicPrice || "-"} €</p> : null}
+                  <p><b>Status:</b> {candidate.supplierStatus || "-"} · {candidate.available ? "Verfügbar" : "Nicht verfügbar"}</p>
+                  <p><b>Shop-Veröffentlichung:</b> {candidate.published ? "Ja" : "Nein"} · <b>Freigabe:</b> {candidate.approved ? "Ja" : "Nein"}</p>
+                  {candidate.reviewStatus ? <p><b>Review:</b> {candidate.reviewStatus} · <b>Manueller Preis:</b> {candidate.review?.publicPrice || "-"} €</p> : null}
                   <div className="adminFormActions">
-                    <button type="button" onClick={() => reviewSupplierCandidate(candidate, "approved")}>Manuel onayla</button>
-                    <button type="button" className="btn ghost" onClick={() => reviewSupplierCandidate(candidate, "reviewed")}>Review notu</button>
-                    <button type="button" className="danger" onClick={() => reviewSupplierCandidate(candidate, "rejected")}>Reddet</button>
+                    <button type="button" onClick={() => reviewSupplierCandidate(candidate, "approved")}>Manuell freigeben</button>
+                    <button type="button" className="btn ghost" onClick={() => reviewSupplierCandidate(candidate, "reviewed")}>Review-Notiz</button>
+                    <button type="button" className="danger" onClick={() => reviewSupplierCandidate(candidate, "rejected")}>Ablehnen</button>
                   </div>
                   <details>
                     <summary>Raw supplier payload</summary>
